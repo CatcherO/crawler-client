@@ -25,9 +25,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "reelectron-start": "npm run build",
     "electron-start": "electron .",
     "preelectron-pack": "npm run build",
-    "electron-pack": "build -c.extraMetadata.main=build/main.js"
+    "electron-pack": "build -c.extraMetadata.main=build/main.js",
+    "electron-dev": "concurrently \"BROWSER=none react-scripts start\" \"wait-on http://localhost:3000 && electron .\""
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -47,6 +49,8 @@
   "devDependencies": {
     "electron": "^5.0.2",
     "electron-builder": "^20.40.2",
+    "electron-is-dev": "^1.1.0",
+    "react-hot-loader": "^4.8.8",
     "typescript": "^3.4.5"
   }
 }
