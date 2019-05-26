@@ -1,14 +1,15 @@
 import React from 'react'
-import { Cascader, Button, Progress } from 'element-react/next'
+import { Cascader, Button, Progress, Checkbox } from 'element-react/next'
 import { provinces } from './cityJson'
 import Avatar from './avatar.jpg'
 import 'element-theme-default/lib/cascader.css'
 import 'element-theme-default/lib/button.css'
 import 'element-theme-default/lib/icon.css'
 import 'element-theme-default/lib/progress.css'
+import 'element-theme-default/lib/checkbox.css'
 import './input.css'
 
-// const { ipcRenderer } = window.require('electron')
+const { ipcRenderer, shell } = window.require('electron')
 export default class Input extends React.Component {
     constructor(props) {
         super(props);
@@ -22,34 +23,77 @@ export default class Input extends React.Component {
             },
             value: ['江苏省', '南京市'],
             precentage: 25,
-            loading: false
+            loading: false,
+            Search: true,
+            Get: true, 
+            statusTexts: ['12332','kjilk','jkk\\\\\kkkkkk']
         };
     }
 
-    handleOnClink(v){
-        // ipcRenderer.send('sendMsg', this.state.value)
-        console.log('click')
-        this.setState({loading: true})
+    componentDidMount() {
+        
+       const { value } = JSON.parse(localStorage.getItem('lastConfig')) || { value: [] }
+       console.log(value)
+
+       this.setState({value})
     }
 
-    handleChange (v) {
+    handleOnClick(e) {
+        if(!this.state.value[0]) {
+            return
+        }
+        this.setState({loading: true})
+
+        ipcRenderer.send('sendSearchMsg', {
+            province: this.state.value[0],
+            city: this.state.value[1],
+            Search: this.state.Search,
+            Get: this.state.Get
+        })
+
+       
+       ipcRenderer.on('sendSearchFeedBack', (e, precentage) => {
+           if(precentage === 100){
+            this.setState({precentage,loading: false})
+           } else {
+            this.setState({precentage})
+           }
+        })
+
+        ipcRenderer.on('sendStatusFeedBack', (e, data) => {
+            let statusTexts = this.state.statusTexts
+            statusTexts.unshift(data)
+            this.setState({ statusTexts: statusTexts })
+        })
+        localStorage.setItem('lastConfig', JSON.stringify({value: this.state.value}))
+    }
+
+    handleChange(v) {
+        this.setState({ value: v })
+    }
+    handleCheckChange1(v) {
         console.log(v)
-        this.setState({value: v})
+        this.setState({Search: v})
+    }
+    handleCheckChange2(v) {
+        console.log(v)
+        this.setState({Get: v})
     }
 
     render() {
         return (
             <div className="input-header">
                 <div className="circle-avatar" >
-                    <img src={Avatar} className='avatar'/>               
+                    <img src={Avatar} className='avatar' />
                     <Progress type="circle"
                         percentage={this.state.precentage}
                         showText={false}
                         strokeWidth={2}
                         status="success"
-                     />
+                    />
                 </div>
-                <div style={{ marginTop: '10px'}}>
+                
+                <div style={{ marginTop: '10px' }}>
                     <Cascader
                         disabled={this.state.loading}
                         props={this.state.props}
@@ -58,18 +102,26 @@ export default class Input extends React.Component {
                         value={this.state.value}
                         onChange={this.handleChange.bind(this)}
                     />
-                <Button
-                    style={{ marginTop: '10px'}}
-                    icon="search"
-                    size="small"
-                    type="primary"
-                    disabled={this.state.loading}
-                    loading={this.state.loading}
-                    onClick={this.handleOnClink.bind(this)}
-                >
-                </Button>
+                    <Button
+                        style={{ marginTop: '10px' }}
+                        icon="search"
+                        size="small"
+                        type="primary"
+                        disabled={this.state.loading}
+                        loading={this.state.loading}
+                        onClick={this.handleOnClick.bind(this)}
+                    >
+                    </Button>
                 </div>
-                
+                <div>
+                    <Checkbox checked={this.state.Search} onChange={this.handleCheckChange1.bind(this)}>搜索数据</Checkbox>
+                    <Checkbox checked={this.state.Get} onChange={this.handleCheckChange2.bind(this)}>获取数据</Checkbox>
+                </div>
+                <div className="textBox">
+                    {this.state.statusTexts[0] === '完成' ? <i className="el-icon-document open-file">打开文件</i> : ''}
+                    <pre>{this.state.statusTexts.join('\n')}</pre>
+                </div>
+
             </div>
         )
     }

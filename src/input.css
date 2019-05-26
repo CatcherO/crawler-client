@@ -17,3 +17,19 @@
 .circle-avatar{
   position: relative;
 }
+
+.textBox {
+  padding-left: 50px;
+  padding-top: 10px;
+  width: 300px;
+  height: 200px;
+  font-size: 15px;
+  color: #87929e;
+  overflow: hidden;
+}
+.open-file {
+  cursor: pointer;
+}
+.open-file:hover {
+  text-decoration: underline;
+}

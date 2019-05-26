@@ -1,20 +1,18 @@
 const fs = require('fs')
 const puppeteer = require('puppeteer')
+const path = require('path')
 
 const _searchAjax = require('./search')
 const getRecord = require('./getRecord')
-const config = require('./searchConfig')
 const getNum = require('./getNum')
-const day = config.day
 const url = 'http://skb.91jierong.com'
 
-
-
-const run = async () => {
-
+let precentage = 0
+const run = async (config, event) => {
+  event.sender.send('sendSearchFeedBack', 1)
   const browser = await puppeteer.launch(
     {
-      headless: false,
+      headless: true,
       defaultViewport: {
         width: 1000,
         height: 800
@@ -31,7 +29,7 @@ const run = async () => {
   })
   const accounts = Object.keys(config.keyAreas)
   for (let i = 0; i < accounts.length; i++) {
-
+    precentage = Math.floor(100/accounts.length)
     await page.goto(`${url}/index.php/Home/Login/login.html`)
 
     await page.$eval('#phone-num', input => input.value = '')
@@ -42,7 +40,7 @@ const run = async () => {
     await page.waitForNavigation()
     
 
-    // await page.on('console', msg => console.log(msg.text()))
+    await page.on('console', msg => event.sender.send('sendStatusFeedBack', msg.text()))
 
     let area = config.keyAreas[accounts[i]]
     //搜索数据
@@ -51,20 +49,24 @@ const run = async () => {
       config.searchData2.location = `${config.province}-${config.city}-${area}`
       await page.evaluate(_searchAjax, config.url1, config.searchData1)
       await page.evaluate(_searchAjax, config.url2, config.searchData2)
-      console.log(`${area}搜索完成`)
+      event.sender.send('sendStatusFeedBack',`${area}搜索完成`)
     }
     // 获取已浏览数据
     if (!config.isGet) {
       await page.goto(`${url}/index.php/home/View/views.html`)
 
-      const dataJson = await page.evaluate(getRecord, day)
+      const dataJson = await page.evaluate(getRecord, config.day)
       
       if (dataJson) {
         await new Promise((r, j) => {
-          fs.writeFile(`./dist/${config.province}/${config.city}/json/${area}${day}.json`, JSON.stringify(dataJson.flat()), 'utf8', () => {
+          fs.writeFile(path.join(__dirname,`../data/${config.province}/${config.city}/json/${area}${config.day}.json`), JSON.stringify(dataJson.flat()), 'utf8', (err) => {
+            if(err) {
+              j(err)
+            }else{
             r()
-            console.log(`${area}生成JSON数据`)
-          })
+            event.sender.send('sendStatusFeedBack',`${area}生成JSON数据`)
+            }
+         })
         })
       }
     }
@@ -72,7 +74,8 @@ const run = async () => {
 
   }
   await browser.close()
-  getNum(config)
+  getNum(config, event)
 }
-run()
-
+module.exports = {
+  run
+}
