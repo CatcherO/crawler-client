@@ -9,6 +9,7 @@ import 'element-theme-default/lib/progress.css'
 import 'element-theme-default/lib/checkbox.css'
 import './input.css'
 
+const path = window.require('path')
 const { ipcRenderer, shell } = window.require('electron')
 export default class Input extends React.Component {
     constructor(props) {
@@ -22,27 +23,26 @@ export default class Input extends React.Component {
                 children: 'city'
             },
             value: ['江苏省', '南京市'],
-            precentage: 25,
+            percentage: 100,
             loading: false,
             Search: true,
-            Get: true, 
-            statusTexts: ['12332','kjilk','jkk\\\\\kkkkkk']
+            Get: true,
+            statusTexts: []
         };
     }
 
     componentDidMount() {
-        
-       const { value } = JSON.parse(localStorage.getItem('lastConfig')) || { value: [] }
-       console.log(value)
-
-       this.setState({value})
+        const { value } = JSON.parse(localStorage.getItem('lastConfig')) || { value: [] }
+        this.setState({ value })
     }
 
     handleOnClick(e) {
-        if(!this.state.value[0]) {
+        // 未选择城市 返回
+        if (!this.state.value[0]) {
             return
         }
-        this.setState({loading: true})
+
+        this.setState({ loading: true, percentage: 0 })
 
         ipcRenderer.send('sendSearchMsg', {
             province: this.state.value[0],
@@ -51,13 +51,13 @@ export default class Input extends React.Component {
             Get: this.state.Get
         })
 
-       
-       ipcRenderer.on('sendSearchFeedBack', (e, precentage) => {
-           if(precentage === 100){
-            this.setState({precentage,loading: false})
-           } else {
-            this.setState({precentage})
-           }
+
+        ipcRenderer.on('sendSearchFeedBack', (e, percentage) => {
+            if (percentage === 100) {
+                this.setState({ percentage, loading: false })
+            } else {
+                this.setState({ percentage })
+            }
         })
 
         ipcRenderer.on('sendStatusFeedBack', (e, data) => {
@@ -65,19 +65,23 @@ export default class Input extends React.Component {
             statusTexts.unshift(data)
             this.setState({ statusTexts: statusTexts })
         })
-        localStorage.setItem('lastConfig', JSON.stringify({value: this.state.value}))
+        localStorage.setItem('lastConfig', JSON.stringify({ value: this.state.value }))
     }
-
+    handleOpenFile(e) {
+        // shell.openExternal(`file://${path.join(__dirname,'../public/data')}`)
+        console.log(e.target)
+        ipcRenderer.send('sendOpenFile', 'open')
+    }
     handleChange(v) {
         this.setState({ value: v })
     }
     handleCheckChange1(v) {
         console.log(v)
-        this.setState({Search: v})
+        this.setState({ Search: v })
     }
     handleCheckChange2(v) {
         console.log(v)
-        this.setState({Get: v})
+        this.setState({ Get: v })
     }
 
     render() {
@@ -86,14 +90,14 @@ export default class Input extends React.Component {
                 <div className="circle-avatar" >
                     <img src={Avatar} className='avatar' />
                     <Progress type="circle"
-                        percentage={this.state.precentage}
+                        percentage={this.state.percentage}
                         showText={false}
                         strokeWidth={2}
                         status="success"
                     />
                 </div>
-                
-                <div style={{ marginTop: '10px' }}>
+
+                <div style={{ marginTop: '10px', marginBottom: '10px' }}>
                     <Cascader
                         disabled={this.state.loading}
                         props={this.state.props}
@@ -116,9 +120,14 @@ export default class Input extends React.Component {
                 <div>
                     <Checkbox checked={this.state.Search} onChange={this.handleCheckChange1.bind(this)}>搜索数据</Checkbox>
                     <Checkbox checked={this.state.Get} onChange={this.handleCheckChange2.bind(this)}>获取数据</Checkbox>
+
                 </div>
                 <div className="textBox">
-                    {this.state.statusTexts[0] === '完成' ? <i className="el-icon-document open-file">打开文件</i> : ''}
+                    <i className="el-icon-document open-file"
+                        onClick={this.handleOpenFile.bind(this)}
+                    >
+                        打开储存文件夹
+                    </i>
                     <pre>{this.state.statusTexts.join('\n')}</pre>
                 </div>
 

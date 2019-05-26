@@ -7,7 +7,8 @@ const getRecord = require('./getRecord')
 const getNum = require('./getNum')
 const url = 'http://skb.91jierong.com'
 
-let precentage = 0
+// 进度
+let percentage = 0
 const run = async (config, event) => {
   event.sender.send('sendSearchFeedBack', 1)
   const browser = await puppeteer.launch(
@@ -27,9 +28,11 @@ const run = async (config, event) => {
     else
       interceptedRequest.continue()
   })
-  const accounts = Object.keys(config.keyAreas)
+  const accounts = Object.keys(config.keyAreas) // 登录账号
+
+  let count = Math.floor(50/accounts.length) // 进度间隔
+
   for (let i = 0; i < accounts.length; i++) {
-    precentage = Math.floor(100/accounts.length)
     await page.goto(`${url}/index.php/Home/Login/login.html`)
 
     await page.$eval('#phone-num', input => input.value = '')
@@ -39,19 +42,27 @@ const run = async (config, event) => {
     await page.click('#pass-login')
     await page.waitForNavigation()
     
+    const regConsole = /Failed to load resource: net::ERR_FAILED|index.php/ // 控制台输出过滤
 
-    await page.on('console', msg => event.sender.send('sendStatusFeedBack', msg.text()))
+    await page.on('console', msg => {
+      if(!regConsole.test(msg.text())) {
+        event.sender.send('sendStatusFeedBack', msg.text())
+      }
+     })
 
-    let area = config.keyAreas[accounts[i]]
+    let area = config.keyAreas[accounts[i]] //地区
     //搜索数据
+    event.sender.send('sendSearchFeedBack', percentage += count)
     if (!config.isSearch) {
       config.searchData1.city = area
       config.searchData2.location = `${config.province}-${config.city}-${area}`
       await page.evaluate(_searchAjax, config.url1, config.searchData1)
+     
       await page.evaluate(_searchAjax, config.url2, config.searchData2)
       event.sender.send('sendStatusFeedBack',`${area}搜索完成`)
     }
     // 获取已浏览数据
+    event.sender.send('sendSearchFeedBack', percentage += count)
     if (!config.isGet) {
       await page.goto(`${url}/index.php/home/View/views.html`)
 
@@ -70,9 +81,8 @@ const run = async (config, event) => {
         })
       }
     }
-
-
   }
+
   await browser.close()
   getNum(config, event)
 }
