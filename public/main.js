@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow, ipcMain} = require('electron')
 const path = require('path')
 // const isDev = require('electron-is-dev')
 // Keep a global reference of the window object, if you don't, the window will
@@ -9,12 +9,14 @@ let mainWindow
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 350,
-    height: 450,
+    width: 400,
+    height: 600,
     webPreferences: {
       nodeIntegration: true
     },
-    frame: false
+    frame: false,
+    resizable: false,
+    icon: `${__dirname}/icon/favicon.ico`
   })
 
   // and load the index.html of the app.
@@ -35,10 +37,28 @@ function createWindow () {
     // when you should delete the corresponding element.
     mainWindow = null
   })
-
+  ipcMain.on('sendCloseWindow', (event, data) => {
+    mainWindow.close()
+  })
   require('./ipcMain')
 }
-
+// 实例检测
+//  const moreInstance = app.makeSingleInstance((commandline, workingDirectory) => {
+//   if(mainWindow) { // 如果存在执行以下
+//     // 判断主实例窗口是否最小化 如果是的话 恢复到之前的状态
+//     // if (mainWindow.isMaximized()) mainWindow.restore()
+//     mainWindow.focus() // 主实例窗口focus
+//   }
+// })
+// // 判断是否存在主实例
+// if (moreInstance) {
+//   // 离开当前的进程
+//   app.quit()
+// }
+// 主进程准备完毕
+app.on('ready', () => {
+  // 创建窗口的方法
+})
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.

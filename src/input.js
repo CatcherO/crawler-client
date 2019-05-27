@@ -9,7 +9,6 @@ import 'element-theme-default/lib/progress.css'
 import 'element-theme-default/lib/checkbox.css'
 import './input.css'
 
-const path = window.require('path')
 const { ipcRenderer, shell } = window.require('electron')
 export default class Input extends React.Component {
     constructor(props) {
@@ -22,7 +21,7 @@ export default class Input extends React.Component {
                 label: 'name',
                 children: 'city'
             },
-            value: ['江苏省', '南京市'],
+            value: [],
             percentage: 100,
             loading: false,
             Search: true,
@@ -67,10 +66,16 @@ export default class Input extends React.Component {
         })
         localStorage.setItem('lastConfig', JSON.stringify({ value: this.state.value }))
     }
-    handleOpenFile(e) {
-        // shell.openExternal(`file://${path.join(__dirname,'../public/data')}`)
-        console.log(e.target)
-        ipcRenderer.send('sendOpenFile', 'open')
+    handleOpenFileData(e) {
+
+        ipcRenderer.send('sendOpenFileData','open')
+    }
+    handleOpenFileCity(e){
+        
+        ipcRenderer.send('sendOpenFileCity',e.target.textContent)
+    }
+    handleCloseWindow() {
+        ipcRenderer.send('sendCloseWindow', 'close')
     }
     handleChange(v) {
         this.setState({ value: v })
@@ -87,8 +92,12 @@ export default class Input extends React.Component {
     render() {
         return (
             <div className="input-header">
-                <div className="circle-avatar" >
-                    <img src={Avatar} className='avatar' />
+                <div className="top-bar">
+                    <div className="top-bar2"></div>
+                    <i className="el-icon-circle-close" style={{cursor: 'pointer'}} onClick={this.handleCloseWindow.bind(this)}></i>
+                </div>
+                <div className="circle-avatar" onClick={this.handleOpenFileData.bind(this)} >
+                    <img src={Avatar} className='avatar' alt="点击可打开数据存储文件夹"/>
                     <Progress type="circle"
                         percentage={this.state.percentage}
                         showText={false}
@@ -124,9 +133,8 @@ export default class Input extends React.Component {
                 </div>
                 <div className="textBox">
                     <i className="el-icon-document open-file"
-                        onClick={this.handleOpenFile.bind(this)}
-                    >
-                        打开储存文件夹
+                        onClick={this.handleOpenFileCity.bind(this)}
+                    >{this.state.value.join('/')}
                     </i>
                     <pre>{this.state.statusTexts.join('\n')}</pre>
                 </div>

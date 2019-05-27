@@ -5,18 +5,27 @@
   "main": "public/main.js",
   "homepage": "./",
   "build": {
+    "productName": "toYou",
     "files": [
       "build/**/*",
       "node_modules/**/*"
     ],
     "directories": {
       "buildResources": "assets"
-    }
+    },
+    "win": {
+      "icon": "build/icons/favicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "asar": false
   },
   "dependencies": {
     "element-react": "^1.4.34",
     "element-theme-default": "^1.4.13",
-    "internet-available": "^1.0.0",
     "lodash": "^4.17.11",
     "node-xlsx": "^0.15.0",
     "puppeteer": "^1.16.0",
@@ -32,8 +41,7 @@
     "reelectron-start": "npm run build",
     "electron-start": "electron .",
     "preelectron-pack": "npm run build",
-    "electron-pack": "build -c.extraMetadata.main=build/main.js",
-    "electron-dev": "concurrently \"BROWSER=none react-scripts start\" \"wait-on http://localhost:3000 && electron .\""
+    "electron-pack": "build -c.extraMetadata.main=build/main.js"
   },
   "eslintConfig": {
     "extends": "react-app"

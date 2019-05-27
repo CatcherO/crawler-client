@@ -12,12 +12,22 @@ for (let i = 0; i < accounts.length; i++) {
     
     let data = require(filePath)
     event.sender.send('sendStatusFeedBack',`正在过滤${area}数据`)
-    let phoneStr = data.filter(e => !/服装|汽车|车|开关|超市|广告|五金|烧烤|家政|汽修|鲜花|洗衣|电脑|喷漆|油|儿童|服饰|轮胎|二手房|商店|诊所|修理|房产|防水|出租|酒行|标牌/.test(e.name)).map(e => {
+    let phoneStr = data.filter(e => !/服装|汽车|车|开关|超市|广告|五金|发型|园林|古建|机电|环境|糖果|俱乐部|培训|烧烤|家政|印刷|汽修|鲜花|洗衣|电脑|喷漆|油|儿童|服饰|轮胎|二手房|商店|诊所|修理|房产|防水|出租|酒行|标牌/.test(e.name)).map(e => {
         return [e.name, ...e.phone.match(/1[3-9][0-9]{9}/g)]
     })
-    phoneStr.unshift(['名', '其他手机'])
+    phoneStr.unshift(['名', '其他手机', '其他手机', '其他手机'])
     
     sheet.push({name: `${area}${config.day}`,data: phoneStr})
+
+    let csvData = phoneStr.map(e => {
+        e.length= 4
+        return e.join(',') 
+    }).join('\n')
+    fs.writeFile(path.join(__dirname,`../data/${config.province}/${config.city}/csv/${config.city}${area}${config.day}.csv`), csvData ,'utf8', (err) =>{
+        if(err){
+            event.sender.send('sendStatusFeedBack',err)
+        }
+    })
 }
     const buffer = xlsx.build(sheet)
     event.sender.send('sendStatusFeedBack',`正在生成${config.city}.xlsx文件`)

@@ -1,15 +1,25 @@
 const fs = require('fs')
 const puppeteer = require('puppeteer')
 const path = require('path')
-
 const _searchAjax = require('./search')
 const getRecord = require('./getRecord')
 const getNum = require('./getNum')
 const url = 'http://skb.91jierong.com'
 
+const browserFetcher = puppeteer.createBrowserFetcher();
 // 进度
 let percentage = 0
+// function getChromiumExecPath() {
+//   return puppeteer.executablePath().replace('app.asar', 'app.asar.unpacked')
+// }
 const run = async (config, event) => {
+//
+ const localChromiums = await browserFetcher.localRevisions();
+
+if(!localChromiums.length) return console.error('Can\'t find installed Chromium');
+
+const { executablePath } = await browserFetcher.revisionInfo(localChromiums[0]);
+//
   event.sender.send('sendSearchFeedBack', 1)
   const browser = await puppeteer.launch(
     {
@@ -17,7 +27,8 @@ const run = async (config, event) => {
       defaultViewport: {
         width: 1000,
         height: 800
-      }
+      },
+      executablePath: executablePath
     }
   )
   const page = await browser.newPage()

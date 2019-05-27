@@ -1,7 +1,7 @@
 //主进程
 const path = require('path')
 const { ipcMain, shell }  = require('electron')
-const internetAvailable = require('internet-available')
+// const internetAvailable = require('internet-available')
 const { run } = require('./task/app')
 const getNum = require('./task/getNum')
 const getSearchConfig = require('./config/getSearchConfig')
@@ -16,7 +16,13 @@ ipcMain.on('sendSearchMsg', (event, data)=> {
         run(config, event)
     }
 })
-ipcMain.on('sendOpenFile', (event, data) => {
-    console.log(data,'okkk')
-    shell.openExternal(`file://${path.join(__dirname,'../public/data')}`)
+ipcMain.on('sendOpenFileData', (event, data) => {
+    shell.openExternal(`file://${path.join(__dirname,`../public/data`)}`)
 })
+ipcMain.on('sendOpenFileCity', (event, data) => {
+    shell.openExternal(`file://${path.join(__dirname,`../public/data/${data}`)}`)
+})
+
+
+
+
