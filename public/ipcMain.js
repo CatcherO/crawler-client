@@ -17,10 +17,10 @@ ipcMain.on('sendSearchMsg', (event, data)=> {
     }
 })
 ipcMain.on('sendOpenFileData', (event, data) => {
-    shell.openExternal(`file://${path.join(__dirname,`../public/data`)}`)
+    shell.openExternal(`file://${path.join(__dirname,`./data`)}`)
 })
 ipcMain.on('sendOpenFileCity', (event, data) => {
-    shell.openExternal(`file://${path.join(__dirname,`../public/data/${data}`)}`)
+    shell.openExternal(`file://${path.join(__dirname,`./data/${data}`)}`)
 })
 
 
