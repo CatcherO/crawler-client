@@ -1,5 +1,5 @@
 import React from 'react'
-import { Cascader, Button, Progress, Checkbox } from 'element-react/next'
+import { Cascader, Button, Progress, Checkbox, DatePicker} from 'element-react/next'
 import { provinces } from './cityJson'
 import Avatar from './avatar.jpg'
 import 'element-theme-default/lib/cascader.css'
@@ -7,6 +7,7 @@ import 'element-theme-default/lib/button.css'
 import 'element-theme-default/lib/icon.css'
 import 'element-theme-default/lib/progress.css'
 import 'element-theme-default/lib/checkbox.css'
+import 'element-theme-default/lib/date-picker.css'
 import './input.css'
 
 const { ipcRenderer, shell } = window.require('electron')
@@ -26,7 +27,8 @@ export default class Input extends React.Component {
             loading: false,
             Search: true,
             Get: true,
-            statusTexts: []
+            statusTexts: [],
+            day: ''
         };
     }
 
@@ -40,14 +42,15 @@ export default class Input extends React.Component {
         if (!this.state.value[0]) {
             return
         }
-
+        if(!this.state.day)
         this.setState({ loading: true, percentage: 0 })
 
         ipcRenderer.send('sendSearchMsg', {
             province: this.state.value[0],
             city: this.state.value[1],
             Search: this.state.Search,
-            Get: this.state.Get
+            Get: this.state.Get,
+            day: this.state.day
         })
 
 
@@ -129,6 +132,7 @@ export default class Input extends React.Component {
                 <div>
                     <Checkbox checked={this.state.Search} onChange={this.handleCheckChange1.bind(this)}>搜索数据</Checkbox>
                     <Checkbox checked={this.state.Get} onChange={this.handleCheckChange2.bind(this)}>获取数据</Checkbox>
+                    {!this.state.Search ? <DatePicker value={this.state.day} onChange={date => this.setState({day: date.slice(0, 10)})} />: ''}
 
                 </div>
                 <div className="textBox">

@@ -8,7 +8,7 @@ const getSearchConfig = require('./config/getSearchConfig')
 
 // 主进程处理渲染进程广播数据
 ipcMain.on('sendSearchMsg', (event, data)=> {
-    
+    console.log(data)
     const config = getSearchConfig(data, event)
     if(config.isGet && config.isSearch) {
         getNum(config, event)

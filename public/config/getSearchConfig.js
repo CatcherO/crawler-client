@@ -3,7 +3,7 @@ const path = require('path')
 const { provinces, areas } = require('./cityJson')
 const { accounts, passwd } = require('./account')
 
-module.exports = function ({province, city, Search, Get}, event) {
+module.exports = function ({province, city, Search, day, Get}, event) {
 
 const getAreas = (provinces, city, areas) => {
   for (let p of provinces) {
@@ -48,6 +48,8 @@ function mkdirsSync(dirname) {
 mkdirsSync(path.join(__dirname,`../data/${province}/${city}/json`))
 mkdirsSync(path.join(__dirname,`../data/${province}/${city}/xlsx`))
 mkdirsSync(path.join(__dirname,`../data/${province}/${city}/csv`))
+mkdirsSync(path.join(__dirname,`../data/${province}/${city}/vcf`))
+mkdirsSync(path.join(__dirname,`../data/${province}/${city}/加微信js`))
 
 return {
   url1: '/index.php/Home/index/search.html',
@@ -69,7 +71,7 @@ return {
   isGet: !Get,
   province,
   city,
-  day: new Date().toISOString().slice(0, 10),
+  day,
  }
 
 }
